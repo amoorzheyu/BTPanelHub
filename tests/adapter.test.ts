@@ -1,0 +1,8 @@
+// @vitest-environment jsdom
+import {beforeEach,it,expect,vi} from 'vitest'
+import {baotaAdapter} from '../src/content/baota-adapter'
+beforeEach(()=>{document.title='宝塔Linux面板';document.body.innerHTML='<input name="username"><input name="password" type="password"><button>登录</button>';vi.spyOn(Element.prototype,'getClientRects').mockImplementation(function(this:Element){return (this as HTMLElement).style.display==='none'?[] as unknown as DOMRectList:[{}] as unknown as DOMRectList})})
+it('未知页面不填充凭据',async()=>{document.title='Other';expect((await baotaAdapter('fill',{username:'u',password:'p'})).status).toBe('needs_user_action');expect((document.querySelector('input') as HTMLInputElement).value).toBe('')})
+it('验证码页面不填充或提交',async()=>{document.body.innerHTML+='<input name="code">';const click=vi.fn();document.querySelector('button')!.onclick=click;expect((await baotaAdapter('fill',{username:'u',password:'p'})).reason).toContain('验证码');await baotaAdapter('submit');expect(click).not.toHaveBeenCalled()})
+it('已识别表单触发输入事件且只按指令提交',async()=>{const input=vi.fn(),click=vi.fn();document.querySelector('input')!.addEventListener('input',input);document.querySelector('button')!.onclick=click;expect((await baotaAdapter('fill',{username:'u',password:'p'})).status).toBe('filled');expect(input).toHaveBeenCalledOnce();expect(click).not.toHaveBeenCalled();expect((await baotaAdapter('submit')).status).toBe('submitting');expect(click).toHaveBeenCalledOnce()})
+it('需要主页导航特征才认定成功',async()=>{document.body.innerHTML='<a href="/site">网站</a><a href="/files">文件</a>';expect((await baotaAdapter('inspect')).status).toBe('success')})

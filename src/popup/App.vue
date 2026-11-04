@@ -9,6 +9,7 @@ import ServerForm from './views/ServerForm.vue'
 import FolderForm from './views/FolderForm.vue'
 import {state,load,removeNode,descendants,persist} from '@/services/repository'
 import {request} from '@/services/client'
+import {ensurePermission} from '@/services/permission-service'
 import type {TreeNode,Server as ServerType,Folder} from '@/types'
 const view=ref('home'),editing=ref<TreeNode>(),parent=ref<string|null>(null),deleting=ref<TreeNode>(),notice=ref('')
 const title=computed(()=>view.value==='server'?(editing.value?'编辑服务器':'新增服务器'):view.value==='folder'?(editing.value?'编辑目录':'新建目录'):view.value==='settings'?'设置':'批量任务')
@@ -20,7 +21,7 @@ else if(a==='edit'&&n){editing.value=n;view.value=n.type}
 else if(a==='delete'){deleting.value=n}
 else if(a==='copy'&&n?.type==='server'){await navigator.clipboard.writeText(n.panelUrl);notice.value='入口地址已复制'}
 else if((a==='up'||a==='down')&&n){const siblings=state.config.nodes.filter(x=>x.parentId===n.parentId).sort((x,y)=>x.sortOrder-y.sortOrder);const i=siblings.findIndex(x=>x.id===n.id),j=i+(a==='up'?-1:1);if(siblings[j]){siblings.forEach((x,k)=>x.sortOrder=k);[siblings[i]!.sortOrder,siblings[j]!.sortOrder]=[siblings[j]!.sortOrder,siblings[i]!.sortOrder];await persist()}}
-else if(a==='open'&&n?.type==='server'){await request('open',{serverId:n.id});notice.value='已在新标签打开面板'}
+else if(a==='open'&&n?.type==='server'){if(n.autoLogin&&state.config.settings.autoFill)await ensurePermission(n.panelUrl);const result=await request<{reason?:string}>('open',{serverId:n.id});notice.value=result.reason||'已打开面板'}
 else if(a.startsWith('open-'))notice.value='批量打开将在任务模块中接入'
 else if(a==='tasks')view.value='tasks'
 }catch(e){notice.value=e instanceof Error?e.message:'操作失败'}}
