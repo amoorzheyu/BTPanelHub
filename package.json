@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vue-tsc --noEmit && vite build && vite build --config vite.worker.config.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "package": "npm run build && node scripts/package.mjs"
   },
   "dependencies": {
     "@lucide/vue": "^1.67.0",
@@ -29,5 +30,8 @@
     "vite": "^6.4.1",
     "vitest": "^5.1.0",
     "vue-tsc": "^3.3.14"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

@@ -46,14 +46,18 @@ const count = (id: string) => {
   <div>
     <template v-for="node in nodes" :key="node.id"
       ><div
-        class="group flex h-9 items-center gap-1 rounded-lg pr-1 transition-colors hover:bg-black/[.035]"
-        :class="selected === node.id ? 'bg-blue-100/80' : ''"
+        class="group flex h-9 items-center gap-1 rounded-lg pr-1 transition-colors"
+        :class="
+          selected === node.id
+            ? 'bg-blue-100/80 hover:bg-blue-100/80'
+            : 'hover:bg-black/[.035]'
+        "
         :style="{ paddingLeft: `${8 + (depth || 0) * 18}px` }"
       >
         <Button
           v-if="node.type === 'folder'"
           variant="ghost"
-          class="h-9 min-w-0 flex-1 justify-start gap-2 px-0 text-[13px] font-medium"
+          class="h-9 min-w-0 flex-1 justify-start gap-2 px-0 text-[13px] font-medium hover:bg-transparent"
           @click="toggleFolder(node.id)"
           ><ChevronRight
             class="size-3.5 shrink-0 transition-transform"
@@ -73,7 +77,7 @@ const count = (id: string) => {
         <template v-else
           ><Button
             variant="ghost"
-            class="h-9 min-w-0 flex-1 justify-start gap-2 px-0 text-[13px] font-medium"
+            class="h-9 min-w-0 flex-1 justify-start gap-2 px-0 text-[13px] font-medium hover:bg-transparent"
             @click="emit('select', node.id)"
             ><ServerIcon class="ml-5 size-4 shrink-0 text-emerald-600" /><span
               class="truncate"
