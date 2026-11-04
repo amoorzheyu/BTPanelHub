@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
 import {
-  Server as ServerIcon,
   Plus,
   Settings,
   ArrowLeft,
@@ -153,10 +152,9 @@ async function confirmDelete() {
 <template>
   <main class="popup-shell">
     <header
+      v-if="view === 'home'"
       class="flex h-[52px] shrink-0 items-center gap-2 border-b bg-white/70 px-3"
     >
-      <ServerIcon class="size-6 shrink-0 text-emerald-500" />
-      <h1 class="shrink-0 text-[17px] font-bold tracking-tight">BTPanelHub</h1>
       <template v-if="view === 'home'"
         ><HeaderSearch v-model="search" /><DropdownMenu
           ><DropdownMenuTrigger as-child
