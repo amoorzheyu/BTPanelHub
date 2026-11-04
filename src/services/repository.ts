@@ -23,6 +23,8 @@ export async function saveNode(node:TreeNode,password?:string){
   node.name=node.name.trim();node.updatedAt=Date.now()
   if(node.type==='server'){node.panelUrl=validateUrl(node.panelUrl);if(!node.username.trim()||!password)throw new Error('请填写用户名和密码');c.credentials[node.passwordRef]=password}
   const i=c.nodes.findIndex(n=>n.id===node.id);if(i<0)c.nodes.push(node);else c.nodes[i]=node
+  let parent=node.parentId
+  while(parent){if(!c.expanded.includes(parent))c.expanded.push(parent);parent=c.nodes.find(n=>n.id===parent)?.parentId||null}
   await persist()
 }
 export async function removeNode(id:string){

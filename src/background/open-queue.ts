@@ -11,12 +11,12 @@ function mutate<T>(fn:(tasks:OpenTask[])=>T|Promise<T>):Promise<T>{
 }
 async function patch(id:string,changes:Partial<TaskItem>){await mutate(tasks=>{for(const t of tasks){const item=t.items.find(i=>i.id===id);if(item&&!terminal.includes(item.status)){Object.assign(item,changes);t.updatedAt=Date.now()}}})}
 export function remainingItems(tasks:OpenTask[],concurrency:number){const all=tasks.flatMap(t=>t.items);const count=all.filter(i=>!terminal.includes(i.status)&&i.status!=='queued').length;return all.filter(i=>i.status==='queued').slice(0,Math.max(0,concurrency-count))}
-export async function enqueue(serverIds:string[],name:string,active=false){
+export async function enqueue(serverIds:string[],name:string,active=false,waitForPermission=false){
  if(!serverIds.length)throw new Error('当前目录没有服务器')
  if(serverIds.length>1000)throw new Error('单次最多打开 1000 台服务器')
  const c=await readConfig(),nodes=serverIds.map(id=>c.nodes.find(n=>n.id===id&&n.type==='server'))
  if(nodes.some(n=>!n))throw new Error('服务器配置已变更，请重新选择')
- const task:OpenTask={id:crypto.randomUUID(),name:name.slice(0,100),createdAt:Date.now(),updatedAt:Date.now(),cancelled:false,items:[...new Set(serverIds)].map(id=>({id:crypto.randomUUID(),serverId:id,name:c.nodes.find(n=>n.id===id)!.name,status:'queued'}))}
+ const task:OpenTask={id:crypto.randomUUID(),name:name.slice(0,100),createdAt:Date.now(),updatedAt:Date.now(),cancelled:false,items:[...new Set(serverIds)].map(id=>({id:crypto.randomUUID(),serverId:id,name:c.nodes.find(n=>n.id===id)!.name,status:'queued',waitForPermission}))}
  await mutate(tasks=>{const keep=tasks.filter(t=>t.items.some(i=>!terminal.includes(i.status)));const history=tasks.filter(t=>t.items.every(i=>terminal.includes(i.status))).slice(-29);tasks.splice(0,tasks.length,...history,...keep,task)})
  void pump(active?task.id:undefined)
  return task.id
@@ -27,7 +27,7 @@ async function execute(item:TaskItem,active:boolean){
  if(inflight.has(item.id))return;inflight.add(item.id)
  try{
   const tab=await openServer(item.serverId,active,async tab=>{await patch(item.id,{tabId:tab.id,status:'waiting_page'})})
-  const result=await runLogin(tab.id!,item.serverId,status=>patch(item.id,{status}))
+  const result=await runLogin(tab.id!,item.serverId,status=>patch(item.id,{status}),false,item.waitForPermission)
   await patch(item.id,result)
  }catch{await patch(item.id,{status:'failed',reason:'打开面板失败，已创建的标签将保留'})}
  finally{inflight.delete(item.id);void pump()}

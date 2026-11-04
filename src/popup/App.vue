@@ -25,7 +25,7 @@ else if(a==='edit'&&n){editing.value=n;view.value=n.type}
 else if(a==='delete'){deleting.value=n}
 else if(a==='copy'&&n?.type==='server'){await navigator.clipboard.writeText(n.panelUrl);notice.value='入口地址已复制'}
 else if((a==='up'||a==='down')&&n){const siblings=state.config.nodes.filter(x=>x.parentId===n.parentId).sort((x,y)=>x.sortOrder-y.sortOrder);const i=siblings.findIndex(x=>x.id===n.id),j=i+(a==='up'?-1:1);if(siblings[j]){siblings.forEach((x,k)=>x.sortOrder=k);[siblings[i]!.sortOrder,siblings[j]!.sortOrder]=[siblings[j]!.sortOrder,siblings[i]!.sortOrder];await persist()}}
-else if(a==='open'&&n?.type==='server'){if(n.autoLogin&&state.config.settings.autoFill)await ensurePermission(n.panelUrl);await request('open',{serverId:n.id});notice.value='已加入打开任务'}
+else if(a==='open'&&n?.type==='server'){const needsPermission=n.autoLogin&&state.config.settings.autoFill;const opening=request('open',{serverId:n.id,waitForPermission:needsPermission});if(needsPermission)void ensurePermission(n.panelUrl).catch(()=>{});await opening;notice.value='已加入打开任务'}
 else if(a.startsWith('open-')&&n?.type==='folder'){const ids=a==='open-recursive'?descendants(state.config.nodes,n.id):state.config.nodes.filter(x=>x.parentId===n.id).map(x=>x.id);const serverIds=state.config.nodes.filter(x=>x.type==='server'&&ids.includes(x.id)).map(x=>x.id);await request('batch',{serverIds,name:n.name});view.value='tasks'}
 else if(a==='tasks')view.value='tasks'
 }catch(e){notice.value=e instanceof Error?e.message:'操作失败'}}

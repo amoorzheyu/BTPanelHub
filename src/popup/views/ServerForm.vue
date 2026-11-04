@@ -16,7 +16,7 @@ const password=ref(state.config.credentials[form.value.passwordRef]||''),reveal=
 const folders=computed(()=>folderOptions(state.config.nodes))
 const colorNames:Record<string,string>={green:'绿色',blue:'蓝色',purple:'紫色',cyan:'青色',orange:'橙色',red:'红色',pink:'粉色',yellow:'黄色',grey:'灰色'}
 function colorLabel(c:string){return colorNames[c]}
-async function save(){error.value='';saving.value=true;try{await saveNode({...form.value},password.value);if(form.value.parentId&&!state.config.expanded.includes(form.value.parentId)){state.config.expanded.push(form.value.parentId)}emit('done')}catch(e){error.value=e instanceof Error?e.message:'保存失败，请重试'}finally{saving.value=false}}
+async function save(){error.value='';saving.value=true;try{await saveNode({...form.value},password.value);emit('done')}catch(e){error.value=e instanceof Error?e.message:'保存失败，请重试'}finally{saving.value=false}}
 </script>
 <template><form class="flex min-h-0 flex-1 flex-col" @submit.prevent="save"><div class="flex-1 space-y-4 overflow-y-auto px-5 py-3">
 <div class="space-y-1.5"><Label for="name">名称 <span class="text-destructive">*</span></Label><Input id="name" v-model="form.name" placeholder="例如：Web 服务器" required maxlength="100" autofocus/></div>

@@ -2,7 +2,7 @@ import {enqueue,cancelTask,retryTask,recover,onTabUpdated,onTabRemoved} from './
 chrome.runtime.onMessage.addListener((message,sender,respond)=>{
  if(sender.id!==chrome.runtime.id||!sender.url?.startsWith(chrome.runtime.getURL('')))return
  ready.then(async()=>{
-  if(message?.type==='open'&&typeof message.serverId==='string')return enqueue([message.serverId],'打开面板',true)
+  if(message?.type==='open'&&typeof message.serverId==='string')return enqueue([message.serverId],'打开面板',true,message.waitForPermission===true)
   if(message?.type==='batch'&&Array.isArray(message.serverIds)&&message.serverIds.every((id:unknown)=>typeof id==='string'))return enqueue(message.serverIds,String(message.name||'批量打开'))
   if(message?.type==='cancel'&&typeof message.taskId==='string')return cancelTask(message.taskId)
   if(message?.type==='retry'&&typeof message.taskId==='string')return retryTask(message.taskId,message.itemId)

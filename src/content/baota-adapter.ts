@@ -1,5 +1,5 @@
 /** Self-contained function serialized by chrome.scripting; no external runtime references. */
-export async function baotaAdapter(action:'inspect'|'fill'|'submit',credentials?:{username:string;password:string},delay=0):Promise<{status:'login'|'filled'|'success'|'needs_user_action'|'submitting';reason?:string}>{
+export async function baotaAdapter(action:'inspect'|'fill'|'submit',credentials?:{username:string;password:string}|null,delay=0):Promise<{status:'login'|'filled'|'success'|'needs_user_action'|'submitting';reason?:string}>{
  const visible=(el:Element|null):el is HTMLElement=>!!el&&el.getClientRects().length>0&&getComputedStyle(el).visibility!=='hidden'
  const branded=/宝塔|BaoTa|aaPanel/i.test(document.title)
  const user=document.querySelector<HTMLInputElement>('input[name="username"]')

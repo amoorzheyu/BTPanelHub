@@ -12,7 +12,7 @@ import type {TreeNode,Server} from '@/types'
 const emit=defineEmits<{action:[action:string,node?:TreeNode]}>()
 const search=ref(''),filter=ref('all'),selectedId=ref(''),searchInput=ref<InstanceType<typeof Input>>()
 const servers=computed(()=>state.config.nodes.filter((n):n is Server=>n.type==='server'))
-const selected=computed(()=>servers.value.find(n=>n.id===selectedId.value))
+const selected=computed(()=>servers.value.find(n=>n.id===selectedId.value&&(!visibleIds.value||visibleIds.value.has(n.id))))
 const visibleIds=computed(()=>{
   if(!search.value&&filter.value==='all')return undefined
   const q=search.value.trim().toLowerCase(),ids=new Set<string>()
