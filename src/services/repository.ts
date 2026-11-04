@@ -32,4 +32,4 @@ export async function removeNode(id:string){
 export async function favorite(server:Server){server.favorite=!server.favorite;await persist()}
 export async function toggleFolder(id:string){const a=state.config.expanded;state.config.expanded=a.includes(id)?a.filter(v=>v!==id):[...a,id];await persist()}
 export async function replaceConfig(c:Config){state.config=c;await persist()}
-if(isExtension)chrome.storage.onChanged.addListener((changes,area)=>{if(area==='local'&&changes.config?.newValue)state.config=changes.config.newValue as Config})
+if(isExtension)chrome.storage.onChanged.addListener((changes,area)=>{if(area!=='local')return;if(changes.config?.newValue)state.config={...changes.config.newValue as Config,recent:state.config.recent};if(changes.recent)state.config.recent=(changes.recent.newValue||{}) as Record<string,number>})
