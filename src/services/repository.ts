@@ -13,7 +13,8 @@ export function folderOptions(nodes:TreeNode[],exclude?:string){
   const visit=(p:string|null,path:string)=>{for(const n of nodes.filter(n=>n.type==='folder'&&n.parentId===p).sort((a,b)=>a.sortOrder-b.sortOrder)){if(blocked.includes(n.id))continue;const name=path?`${path} / ${n.name}`:n.name;rows.push({id:n.id,name});visit(n.id,name)}}
   visit(null,'');return rows
 }
-export function validateUrl(input:string){const u=new URL(input);if(!['http:','https:'].includes(u.protocol)||u.username||u.password)throw new Error('请输入有效的 HTTP 或 HTTPS 入口地址');return u.href}
+export {validateUrl} from './validation'
+import {validateUrl} from './validation'
 export async function saveNode(node:TreeNode,password?:string){
   const c=state.config
   if(!node.name.trim())throw new Error('请填写名称')

@@ -4,7 +4,7 @@ Chrome / Chromium Manifest V3 扩展，在工具栏 Popup 中本地管理多台�
 
 ## 开发
 
-Node.js 20.19+，执行 `npm ci`、`npm run dev`，打开开发服务的 `/popup.html`。普通网页只用于界面开发，浏览器能力必须加载扩展验证。
+Node.js 24+，执行 `npm ci`、`npm run dev`，打开开发服务的 `/popup.html`。普通网页只用于界面开发，浏览器能力必须加载扩展验证。
 
 执行 `npm run build`，在 Chrome 的 `chrome://extensions` 开启开发者模式，选择“加载已解压的扩展程序”，选择本项目 `dist` 目录。更新构建后点击扩展卡片的刷新按钮。
 
