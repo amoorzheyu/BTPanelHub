@@ -27,6 +27,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import ServerHome from "./views/ServerHome.vue";
+import HeaderSearch from "./components/HeaderSearch.vue";
 import ServerForm from "./views/ServerForm.vue";
 import FolderForm from "./views/FolderForm.vue";
 import BatchTask from "./views/BatchTask.vue";
@@ -41,11 +42,15 @@ import {
 import { request } from "@/services/client";
 import { ensurePermission } from "@/services/permission-service";
 import type { TreeNode, Server as ServerType, Folder } from "@/types";
+const search = ref("");
 const view = ref("home"),
   editing = ref<TreeNode>(),
   parent = ref<string | null>(null),
   deleting = ref<TreeNode>(),
   notice = ref("");
+watch(view, () => {
+  search.value = "";
+});
 let noticeTimer: ReturnType<typeof setTimeout>;
 watch(notice, (v) => {
   clearTimeout(noticeTimer);
@@ -148,12 +153,12 @@ async function confirmDelete() {
 <template>
   <main class="popup-shell">
     <header
-      class="flex h-[52px] shrink-0 items-center gap-2.5 border-b bg-white/70 px-4"
+      class="flex h-[52px] shrink-0 items-center gap-2 border-b bg-white/70 px-3"
     >
-      <ServerIcon class="size-6 text-emerald-500" />
-      <h1 class="flex-1 text-[17px] font-bold tracking-tight">BTPanelHub</h1>
+      <ServerIcon class="size-6 shrink-0 text-emerald-500" />
+      <h1 class="shrink-0 text-[17px] font-bold tracking-tight">BTPanelHub</h1>
       <template v-if="view === 'home'"
-        ><DropdownMenu
+        ><HeaderSearch v-model="search" /><DropdownMenu
           ><DropdownMenuTrigger as-child
             ><Button
               variant="outline"
@@ -195,7 +200,10 @@ async function confirmDelete() {
       {{ state.error }}
     </div>
     <template v-else-if="state.ready"
-      ><ServerHome v-if="view === 'home'" @action="action" /><ServerForm
+      ><ServerHome
+        v-if="view === 'home'"
+        :search="search"
+        @action="action" /><ServerForm
         v-else-if="view === 'server'"
         :server="
           editing?.type === 'server' ? (editing as ServerType) : undefined

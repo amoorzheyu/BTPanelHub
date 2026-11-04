@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, toRef } from "vue";
 import {
-  Search,
   Star,
   Clock,
   Server as ServerIcon,
@@ -12,7 +11,6 @@ import {
   ClipboardList,
 } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FolderTree from "../components/FolderTree.vue";
 import { state, favorite, folderOptions } from "@/services/repository";
@@ -20,10 +18,10 @@ import { tasks, loadTasks } from "@/services/tasks";
 import { terminal } from "@/types";
 import type { TreeNode, Server } from "@/types";
 const emit = defineEmits<{ action: [action: string, node?: TreeNode] }>();
-const search = ref(""),
-  filter = ref("all"),
-  selectedId = ref(""),
-  searchInput = ref<InstanceType<typeof Input>>();
+const props = defineProps<{ search: string }>();
+const search = toRef(props, "search");
+const filter = ref("all"),
+  selectedId = ref("");
 const servers = computed(() =>
   state.config.nodes.filter((n): n is Server => n.type === "server"),
 );
@@ -107,23 +105,7 @@ onUnmounted(() => window.removeEventListener("keydown", hotkey));
 </script>
 <template>
   <div class="flex min-h-0 flex-1 flex-col">
-    <div class="space-y-3 px-4 pt-3">
-      <div class="relative">
-        <Search
-          class="pointer-events-none absolute left-3 top-2.5 size-4 text-slate-400"
-        /><Input
-          id="search"
-          ref="searchInput"
-          v-model="search"
-          class="h-9 bg-white pl-9 pr-12"
-          placeholder="搜索服务器、目录或地址"
-          aria-label="搜索服务器"
-        /><kbd
-          v-if="state.config.settings.shortcuts"
-          class="absolute right-2.5 top-2 rounded bg-slate-100 px-1.5 text-[11px] text-slate-400"
-          >⌘K</kbd
-        >
-      </div>
+    <div class="px-4 pt-3">
       <Tabs v-model="filter"
         ><TabsList class="grid w-full grid-cols-3"
           ><TabsTrigger value="all">全部</TabsTrigger
