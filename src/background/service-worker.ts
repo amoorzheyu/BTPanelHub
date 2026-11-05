@@ -1,3 +1,4 @@
+import { checkSession, forgetSession, scanSessions } from "./session-recovery";
 import {
   enqueue,
   cancelTask,
@@ -43,13 +44,27 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
   return true;
 });
 chrome.tabs.onUpdated.addListener((id, change) => {
-  if (change.status === "complete") void ready.then(() => onTabUpdated(id));
+  if (change.status === "complete")
+    void ready.then(async () => {
+      await onTabUpdated(id);
+      await checkSession(id);
+    });
+});
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  void ready.then(() => checkSession(tabId));
 });
 chrome.tabs.onRemoved.addListener((id) => {
-  void ready.then(() => onTabRemoved(id));
+  void ready.then(async () => {
+    await onTabRemoved(id);
+    await forgetSession(id);
+  });
 });
 chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === "queue-recovery") void ready.then(recover);
+  if (alarm.name === "queue-recovery")
+    void ready.then(async () => {
+      await recover();
+      await scanSessions();
+    });
 });
 chrome.runtime.onInstalled.addListener(() => {
   void chrome.alarms.create("queue-recovery", { periodInMinutes: 0.5 });
@@ -60,4 +75,5 @@ chrome.runtime.onStartup.addListener(() => {
 const ready = (async () => {
   await chrome.alarms.create("queue-recovery", { periodInMinutes: 0.5 });
   await recover();
+  await scanSessions();
 })();

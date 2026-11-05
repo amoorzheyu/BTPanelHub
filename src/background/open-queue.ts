@@ -3,10 +3,11 @@ import {
   type OpenTask,
   type TaskItem,
   type ItemStatus,
+  type Server,
 } from "../types";
 import { readConfig } from "../services/storage";
 import { openServer } from "./open-server";
-import { runLogin } from "./login-runner";
+import { runLogin, type LoginResult } from "./login-runner";
 let lock: Promise<unknown> = Promise.resolve();
 const inflight = new Set<string>();
 async function readTasks(): Promise<OpenTask[]> {
@@ -210,4 +211,37 @@ export async function recover() {
   for (const i of (await readTasks()).flatMap((t) => t.items))
     if (["waiting_page", "submitting"].includes(i.status)) void resumeItem(i);
   await pump();
+}
+
+export async function recordRecoveryResult(
+  server: Server,
+  tabId: number,
+  result: LoginResult,
+) {
+  await mutate((tasks) => {
+    const now = Date.now();
+    const task: OpenTask = {
+      id: crypto.randomUUID(),
+      name: "会话恢复",
+      createdAt: now,
+      updatedAt: now,
+      cancelled: false,
+      items: [
+        {
+          id: crypto.randomUUID(),
+          serverId: server.id,
+          name: server.name,
+          tabId,
+          ...result,
+        },
+      ],
+    };
+    const active = tasks.filter((t) =>
+      t.items.some((i) => !terminal.includes(i.status)),
+    );
+    const history = tasks
+      .filter((t) => t.items.every((i) => terminal.includes(i.status)))
+      .slice(-29);
+    tasks.splice(0, tasks.length, ...history, ...active, task);
+  });
 }
