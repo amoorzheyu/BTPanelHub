@@ -146,3 +146,12 @@ it("检测期间用户离开错误页时不覆盖用户导航", async () => {
   await checkSession(7);
   expect(update).not.toHaveBeenCalled();
 });
+
+it("安全入口提示页 /login 同样在原标签返回已保存入口", async () => {
+  tab.url = "http://example.com:8888/login";
+  await checkSession(7);
+  expect(update).toHaveBeenCalledWith(7, { url: server.panelUrl });
+  tab.status = "complete";
+  await checkSession(7);
+  expect(mocks.login).toHaveBeenCalledWith(7, "s", expect.any(Function), false);
+});
