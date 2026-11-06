@@ -24,7 +24,7 @@ Node.js 24+，执行 `npm ci`、`npm run dev`，打开开发服务的 `/popup.ht
 - 任务在后台运行，关闭 Popup 后仍会执行，重新打开可查看结果；取消只影响待执行项，失败项可单项或批量重试。
 - 设置中导入 JSON 前会预览冲突；合并会保留未被备份包含的现有密码，覆盖会完整替换配置。导出默认不包含密码。
 
-运行 `npm run package` 会重新构建并生成 `release/BTPanelHub-0.1.0.zip`。该命令需要系统提供 `zip`，macOS 默认可用。压缩包解压后可作为未打包扩展加载。
+运行 `npm run package` 会重新构建并生成 `release/BTPanelHub-<当前版本>.zip`。该命令需要系统提供 `zip`，macOS 默认可用。压缩包解压后可作为未打包扩展加载。
 
 Popup 按 Chrome 限制固定为 420×600，长表单和设置在内部滚动。开发页面仅用于 UI 检查，真实标签、权限和自动登录应使用已加载扩展验证。
 
@@ -35,3 +35,24 @@ Popup 按 Chrome 限制固定为 420×600，长表单和设置在内部滚动。
 返回入口后，若已有会话则直接保留面板；若需要登录，会按服务器自动登录与全局填充/提交设置处理。验证码、动态口令和无法识别的页面会停止自动操作，结果记录在“会话恢复”任务中。为避免入口失效导致循环，同一标签两分钟内最多自动返回入口一次，安全入口自身的 404 不再重定向。
 
 检测仅限已配置入口的相同协议、主机和端口，不为任意网站的 404 页面跳转。同一地址配置了多个不同入口时，优先使用标签原有的服务器关联；没有可靠关联则不猜测账号。没有站点权限时不会注入检测脚本，可在设置中授权该服务器的站点。
+
+
+## 版本与自动发布
+
+推送 `v<版本号>` 标签会触发 GitHub Actions，依次校验版本、运行测试、构建 ZIP，并创建附带安装包和自动更新说明的 GitHub Release。使用仓库自动提供的 `GITHUB_TOKEN`，无需添加个人访问密钥。
+
+在干净的 `main` 分支上执行以下命令，例如从 0.1.0 发布到 0.1.1：
+
+```bash
+git pull --rebase
+npm version patch -m "chore: 发布版本 %s"
+git push origin main --follow-tags
+```
+
+也可以将 `patch` 换成 `minor`、`major`，或者指定正式版本，例如 `npm version 1.0.0 -m "chore: 发布版本 %s"`。`npm version` 会更新 package.json、锁文件，通过钩子同步扩展 manifest，并创建版本提交和 `v` 标签。ZIP 文件名与设置页版本号也会自动跟随版本。
+
+仅支持 Chrome 扩展可用的正式三段版本号（每段 0–65535，不能全为 0），不接受 `-beta` 等预发布后缀。标签必须与 package.json、锁文件和 manifest 完全一致；校验或测试失败时不会创建 Release。不要给未升版的提交直接打新版本标签。
+
+可在 GitHub 的 Actions → Release → Run workflow 中选择 `main` 做一次构建检查，仅保存构建产物，不创建 Release。重复运行已发布标签时不会覆盖既有 Release，发布命令会报告该版本已存在。
+
+本地可运行 `npm run release:check`、`npm run test:release` 和 `npm run package`，分别校验版本、检查版本流程和生成安装包。

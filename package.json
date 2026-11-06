@@ -7,7 +7,10 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vue-tsc --noEmit && vite build && vite build --config vite.worker.config.ts",
     "test": "vitest run",
-    "package": "npm run build && node scripts/package.mjs"
+    "package": "npm run build && node scripts/package.mjs",
+    "version": "node scripts/sync-version.mjs && git add public/manifest.json",
+    "release:check": "node scripts/check-release.mjs",
+    "test:release": "node --test scripts/release-version.check.mjs"
   },
   "dependencies": {
     "@lucide/vue": "^1.67.0",

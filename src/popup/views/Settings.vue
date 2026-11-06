@@ -1,14 +1,7 @@
 <script setup lang="ts">
+import { version } from "../../../package.json";
 import { ref, onMounted } from "vue";
-import {
-  Keyboard,
-  Send,
-  Clock,
-  Layers,
-  Shield,
-  Globe,
-  X,
-} from "@lucide/vue";
+import { Keyboard, Send, Clock, Layers, Shield, Globe, X } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -228,7 +221,7 @@ const configured = () => [
       设置已保存
     </p>
     <p class="border-t pt-4 text-center text-[11px] text-slate-400">
-      BTPanelHub · 0.1.0
+      BTPanelHub · {{ version }}
     </p>
   </div>
 </template>
